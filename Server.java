@@ -15,7 +15,6 @@ public class Server
     { 
         // server is listening on port 5056 
         ServerSocket ss = new ServerSocket(5056); 
-          
         // running infinite loop for getting 
         // client request 
         while (true)  
@@ -57,8 +56,6 @@ class ClientHandler extends Thread
     DateFormat fortime = new SimpleDateFormat("hh:mm:ss"); 
     final DataInputStream dis; 
     final DataOutputStream dos; 
-    final Socket s; 
-      
   
     // Constructor 
     public ClientHandler(Socket s, DataInputStream dis, DataOutputStream dos)  
@@ -66,7 +63,7 @@ class ClientHandler extends Thread
         this.s = s; 
         this.dis = dis; 
         this.dos = dos; 
-    } 
+    }
   
     @Override
     public void run()  
@@ -116,6 +113,7 @@ class ClientHandler extends Thread
                 } 
             } catch (IOException e) { 
                 e.printStackTrace(); 
+                break;
             } 
         } 
           
@@ -123,7 +121,9 @@ class ClientHandler extends Thread
         { 
             // closing resources 
             this.dis.close(); 
-            this.dos.close(); 
+            this.dos.close();
+            this.s.close();
+            //System.out.println("B");
               
         }catch(IOException e){ 
             e.printStackTrace(); 

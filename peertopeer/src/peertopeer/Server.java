@@ -24,7 +24,7 @@ public class Server {
     public static void main(String[] args) throws IOException {
         // server is listening on port 5057
         ServerSocket ss = new ServerSocket(5057);
-
+        ArrayList<String> onlineClients = new ArrayList<>(); 
         // running infinite loop for getting client requests
         while (true) {
             Socket s = null;
@@ -39,7 +39,12 @@ public class Server {
 
                 String temp = s.getInetAddress().toString();
                 String ip = temp.substring(1);
-
+                int i=0;
+                for(i=0;i<onlineClients.size();i++)
+                {
+                    if(onlineClients.get(i).equals(ip)) break;
+                }
+                if(i==onlineClients.size()) onlineClients.add(ip);
                 // obtaining input and out streams
                 DataInputStream dis = new DataInputStream(s.getInputStream());
                 DataOutputStream dos = new DataOutputStream(s.getOutputStream());
@@ -47,7 +52,7 @@ public class Server {
                 System.out.println("Assigning new thread for this client");
 
                 // create a new thread object
-                Thread t = new ClientHandler(s, dis, dos, ip);
+                Thread t = new ClientHandler(s, dis, dos, ip, onlineClients);
 
                 // Invoking the start() method
                 t.start();
@@ -73,13 +78,14 @@ class ClientHandler extends Thread {
     final String DB_URL = "jdbc:mysql://localhost/peers?autoReconnect=true&useSSL=false";
     final String USER = "root";
     final String PASS = "pass123";
-
+    ArrayList<String> onlineClients;
     // Constructor
-    public ClientHandler(Socket s, DataInputStream dis, DataOutputStream dos, String ip_address) {
+    public ClientHandler(Socket s, DataInputStream dis, DataOutputStream dos, String ip_address,ArrayList<String> onlineClients) {
         this.s = s;
         this.dis = dis;
         this.dos = dos;
         this.ip_address = ip_address;
+        this.onlineClients = onlineClients;
     }
 
     @Override
@@ -183,6 +189,7 @@ class ClientHandler extends Thread {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                break;
             }
 
         }
@@ -191,6 +198,12 @@ class ClientHandler extends Thread {
             // closing resources
             this.dis.close();
             this.dos.close();
+            this.s.close();
+            //System.out.println("B");
+            for(int i=0;i<this.onlineClients.size();i++)
+            {
+                if(this.onlineClients.get(i).equals(this.ip_address)) this.onlineClients.remove(i);
+            }
 
         } catch (IOException e) {
             e.printStackTrace();

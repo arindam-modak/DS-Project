@@ -73,6 +73,7 @@ class ClientHandler extends Thread {
     final DataOutputStream dos;
     final Socket s;
     String ip_address;
+    String mac_address;
     int flag = 0;
     final String JDBC_Driver_Class = "com.mysql.jdbc.Driver";
     final String DB_URL = "jdbc:mysql://localhost/peers?autoReconnect=true&useSSL=false";
@@ -95,8 +96,9 @@ class ClientHandler extends Thread {
         while (true) {
             try {
                 if (flag == 0) {
-                    dos.writeUTF("1");
+                    dos.writeUTF("MAC");
                     received = dis.readUTF();
+                    this.mac_address = received;
                     System.out.println("Mac of client : " + received);
                     flag = 1;
                     int sig = 0;
@@ -154,9 +156,30 @@ class ClientHandler extends Thread {
                     }
                 } else {
                     // receive the answer from client
-                    dos.writeUTF("Enter file to search");
+                    dos.writeUTF("Press: (1) to Enter file to search | (2) to de-register your pc");
                     received = dis.readUTF();
 
+                    if (received.equals("2"))
+                    {
+                        try {
+                            Class.forName(JDBC_Driver_Class);
+                            Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+                            Statement stmt = conn.createStatement();
+                            String sql = "DELETE from peers where macaddress = '" + this.mac_address + "';";
+                            stmt.executeUpdate(sql);
+                            stmt.close();
+                            conn.close();
+                            
+                            System.out.println("Client " + this.s + " sends exit...");
+                            System.out.println("Closing this connection.");
+                            this.s.close();
+                            System.out.println("Connection closed");
+                            break;
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
+                        }
+                    }
+                    
                     if (received.equals("Exit")) {
                         System.out.println("Client " + this.s + " sends exit...");
                         System.out.println("Closing this connection.");

@@ -26,7 +26,7 @@ public class Client {
             Scanner scn = new Scanner(System.in);
 
             // getting localhost ip
-//            InetAddress ip = InetAddress.getByName("localhost");
+            //InetAddress ip = InetAddress.getByName("localhost");
 
             // establish the connection with server port 5056
             Socket s = new Socket("172.19.17.160", 5057);
@@ -40,7 +40,7 @@ public class Client {
             while (true) {
                 String received = dis.readUTF();
                 received.trim();
-                if (received.equals("1")) {
+                if (received.equals("MAC")) {
                     String macadd = getmac();
                     dos.writeUTF(macadd);
                 } else {

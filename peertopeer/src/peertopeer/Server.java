@@ -5,6 +5,7 @@
  */
 package peertopeer;
   
+
 import java.awt.event.MouseListener;
 import java.io.*; 
 import java.text.*; 
@@ -74,7 +75,7 @@ class ClientHandler extends Thread {
     final Socket s;
     String ip_address;
     String mac_address;
-    int flag = 0;
+    int flag = 1;
     final String JDBC_Driver_Class = "com.mysql.jdbc.Driver";
     final String DB_URL = "jdbc:mysql://localhost/peers?autoReconnect=true&useSSL=false";
     final String USER = "root";
@@ -156,10 +157,19 @@ class ClientHandler extends Thread {
                     }
                 } else {
                     // receive the answer from client
-                    dos.writeUTF("Press: (1) to Enter file to search | (2) to de-register your pc");
+                    dos.writeUTF("Press: (1) to Enter file to search | (2) to de-register your pc | (3) To connect to a peer");
                     received = dis.readUTF();
 
-                    if (received.equals("2"))
+                    if(received.equals("3"))
+                    {
+                        String tt = "OnlineClients :";
+                        for(int i=0;i<this.onlineClients.size();i++)
+                            tt+=" "+this.onlineClients.get(i);
+                        dos.writeUTF("Start Server");
+			received = dis.readUTF();	
+			dos.writeUTF(tt);
+                    }
+                    else if (received.equals("2"))
                     {
                         try {
                             Class.forName(JDBC_Driver_Class);
@@ -180,7 +190,7 @@ class ClientHandler extends Thread {
                         }
                     }
                     
-                    if (received.equals("Exit")) {
+                    else if (received.equals("Exit")) {
                         System.out.println("Client " + this.s + " sends exit...");
                         System.out.println("Closing this connection.");
                         this.s.close();
@@ -188,27 +198,11 @@ class ClientHandler extends Thread {
                         break;
                     }
 
-                    // creating Date object
-                    Date date = new Date();
-
-                    // write on output stream based on the
-                    // answer from the client
-                    switch (received) {
-
-                    case "Date":
-                        toreturn = fordate.format(date);
-                        dos.writeUTF(toreturn);
-                        break;
-
-                    case "Time":
-                        toreturn = fortime.format(date);
-                        dos.writeUTF(toreturn);
-                        break;
-
-                    default:
+                    else
+		    {
                         dos.writeUTF("Invalid input");
-                        break;
                     }
+                    
                 }
             } catch (IOException e) {
                 e.printStackTrace();

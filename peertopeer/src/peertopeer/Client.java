@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package peertopeer;
   
 import java.io.*; 
@@ -26,10 +21,10 @@ public class Client {
             Scanner scn = new Scanner(System.in);
 
             // getting localhost ip
-            //InetAddress ip = InetAddress.getByName("localhost");
+            InetAddress ip = InetAddress.getByName("localhost");
 
             // establish the connection with server port 5056
-            Socket s = new Socket("172.19.17.160", 5057);
+            Socket s = new Socket(ip, 5057);
 
             // obtaining input and out streams
             DataInputStream dis = new DataInputStream(s.getInputStream());
@@ -39,11 +34,23 @@ public class Client {
             // information between client and client handler
             while (true) {
                 String received = dis.readUTF();
-                received.trim();
+                received = received.trim();
+		//System.out.println(received);
                 if (received.equals("MAC")) {
                     String macadd = getmac();
                     dos.writeUTF(macadd);
-                } else {
+                }
+                else if(received.split(" ")[0].equals("OnlineClients")) 
+                {
+                    System.out.println(received);
+                    
+                }
+		else if(received.equals("Start Server"))
+		{
+		    dos.writeUTF("IGNORE");
+		}
+                else
+                {
                     System.out.println(received);
                     String tosend = scn.nextLine();
                     dos.writeUTF(tosend);
@@ -53,10 +60,6 @@ public class Client {
                         System.out.println("Connection closed");
                         break;
                     }
-
-                    // printing date or time as requested by client
-                    String received2 = dis.readUTF();
-                    System.out.println(received2);
                 }
                 /*
                  * String tosend = scn.nextLine(); dos.writeUTF(tosend);

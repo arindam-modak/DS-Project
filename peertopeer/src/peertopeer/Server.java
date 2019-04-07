@@ -17,7 +17,7 @@ import java.sql.Statement;
 
 public class Server {
     public static void main(String[] args) throws IOException {
-        // server is listening on port 5057
+        // server is listening on port 5057 jhjvjhvj
         ServerSocket ss = new ServerSocket(5057);
         ArrayList<String> onlineClients = new ArrayList<>();
         HashMap<String, DataOutputStream> outputstream = new HashMap<>();
@@ -168,67 +168,81 @@ class ClientHandler extends Thread {
                     // receive the answer from client
                     if (this.locking.get(this.ip_address) == 0) {
                         dos.writeUTF(
-                                "Press: (1) to Enter file to search | (2) to de-register your pc | (3) To connect to a peer");
-                        received = dis.readUTF();
-                        // System.out.println(received);
-                        if (received.split(" ")[0].equals("ForPeer")) {
+                                "Press: (1) to Enter file to search | (2) to de-register your pc | (3) to download files");
+                    }
+                    received = dis.readUTF();
+                    System.out.println(received);
+                    if (received.split(" ")[0].equals("ForPeer")) {
+                        if (received.split(" ")[2].equals("No")) {
+                            this.outputstream.get(received.split(" ")[1]).writeUTF("No file found");
+                        } else {
                             this.outputstream.get(received.split(" ")[1])
                                     .writeUTF("Connect to " + this.ip_address + " " + received.split(" ")[2]);
                             this.locking.put(received.split(" ")[1], 0);
-                        } else if (received.equals("3")) {
-                            dos.writeUTF("Connect");
-                            String tt = "OnlineClients :";
-                            String selectclient = "";
-                            for (int i = 0; i < this.onlineClients.size(); i++) {
-                                tt += " " + this.onlineClients.get(i);
-                                if (this.onlineClients.get(i) != this.ip_address) {
-                                    selectclient = this.onlineClients.get(i);
-                                }
-                            }
-                            System.out.println(selectclient);
-                            this.outputstream.get(selectclient).writeUTF("Start Server");
-                            this.outputstream.get(selectclient).writeUTF(this.ip_address);
-                            System.out.println("++++++++++");
-                            this.locking.put(this.ip_address, 1);
-                            // received = dis.readUTF();
-                            // this.locking.put(selectclient, 0);
-                            // System.out.println("port : " + received);
-                            // System.out.println("*****************");
-                            // int portnum = 5058;
-                            // dos.writeUTF("Connect to " + selectclient + " " + received);
+                        }
+                    } else if (received.equals("3")) {
 
-                        } else if (received.equals("2")) {
-                            try {
-                                Class.forName(JDBC_Driver_Class);
-                                Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
-                                Statement stmt = conn.createStatement();
-                                String sql = "DELETE from peers where macaddress = '" + this.mac_address + "';";
-                                stmt.executeUpdate(sql);
-                                stmt.close();
-                                conn.close();
+                        dos.writeUTF("Enter the Name of the file you want ");
+                        String filename = dis.readUTF();
+                        dos.writeUTF("Connect");
+                        dos.writeUTF(filename);
+                        String tt = "OnlineClients :";
+                        String selectclient = "";
+                        dos.writeUTF(Integer.toString(this.onlineClients.size() - 1));
+                        // System.out.println(Integer.toString(this.onlineClients.size() - 1));
+                        for (int i = 0; i < this.onlineClients.size(); i++) {
+                            tt += " " + this.onlineClients.get(i);
 
-                                System.out.println("Client " + this.s + " sends exit...");
-                                System.out.println("Closing this connection.");
-                                this.s.close();
-                                System.out.println("Connection closed");
-                                break;
-                            } catch (Exception e) {
-                                System.out.println(e.getMessage());
+                            if (this.onlineClients.get(i) != this.ip_address) {
+                                this.outputstream.get(this.onlineClients.get(i)).writeUTF("DoYouHaveFile " + filename);
+                                this.outputstream.get(this.onlineClients.get(i)).writeUTF(this.ip_address);
+                                selectclient = this.onlineClients.get(i);
                             }
                         }
+                        // System.out.println(selectclient);
+                        // this.outputstream.get(selectclient).writeUTF("Start Server");
+                        // this.outputstream.get(selectclient).writeUTF(this.ip_address);
+                        // System.out.println("++++++++++");
+                        this.locking.put(this.ip_address, 1);
+                        // received = dis.readUTF();
+                        // this.locking.put(selectclient, 0);
+                        // System.out.println("port : " + received);
+                        // System.out.println("*****************");
+                        // int portnum = 5058;
+                        // dos.writeUTF("Connect to " + selectclient + " " + received);
 
-                        else if (received.equals("Exit")) {
+                    } else if (received.equals("2")) {
+                        try {
+                            Class.forName(JDBC_Driver_Class);
+                            Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+                            Statement stmt = conn.createStatement();
+                            String sql = "DELETE from peers where macaddress = '" + this.mac_address + "';";
+                            stmt.executeUpdate(sql);
+                            stmt.close();
+                            conn.close();
+
                             System.out.println("Client " + this.s + " sends exit...");
                             System.out.println("Closing this connection.");
                             this.s.close();
                             System.out.println("Connection closed");
                             break;
-                        }
-
-                        else {
-                            dos.writeUTF("Invalid input");
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
                         }
                     }
+
+                    else if (received.equals("Exit")) {
+                        System.out.println("Client " + this.s + " sends exit...");
+                        System.out.println("Closing this connection.");
+                        this.s.close();
+                        System.out.println("Connection closed");
+                        break;
+                    }
+
+                    else {
+                        dos.writeUTF("Invalid input");
+                    }
+
                 }
             } catch (IOException e) {
                 e.printStackTrace();

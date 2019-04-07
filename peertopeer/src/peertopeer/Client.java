@@ -1,6 +1,7 @@
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 import java.util.Scanner;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -28,7 +29,7 @@ public class Client {
             // InetAddress ip = InetAddress.getByName("localhost");
 
             // establish the connection with server port 5056
-            Socket s = new Socket("192.168.43.38", 5057);
+            Socket s = new Socket("172.19.16.233", 5057);
 
             // obtaining input and out streams
             DataInputStream dis = new DataInputStream(s.getInputStream());
@@ -47,17 +48,33 @@ public class Client {
                 } else if (received.split(" ")[0].equals("OnlineClients")) {
                     System.out.println(received);
 
-                } else if (received.equals("Start Server")) {
-                    System.out.println("Starting mini server");
+                } else if (received.split(" ")[0].equals("DoYouHaveFile")) {
+                    System.out.println("Starting mini server Requested filename - " + received.split(" ")[1]);
+                    String filename = received.split(" ")[1];
                     port += 1;
                     DataInputStream minidis = new DataInputStream(s.getInputStream());
                     DataOutputStream minidos = new DataOutputStream(s.getOutputStream());
                     System.out.println("Hello 1");
-                    Thread t = new ClientHandler2(port);
+                    final File folder = new File(".");
+
+                    List<String> result = new ArrayList<>();
+
+                    search(filename, folder, result);
+
+                    int flag3 = 0;
+                    for (String rs : result) {
+                        System.out.println(rs);
+                        flag3 = 1;
+                    }
+                    Thread t = new ClientHandler2(port, result.get(0));
                     t.start();
                     System.out.println("Hello 2");
                     received = dis.readUTF();
-                    dos.writeUTF("ForPeer " + received + " " + Integer.toString(port));
+
+                    if (flag3 == 1)
+                        dos.writeUTF("ForPeer " + received + " " + Integer.toString(port));
+                    else
+                        dos.writeUTF("ForPeer " + received + " " + "No");
                 } else if (received.split(" ")[0].equals("Connect")) {
 
                     String peerip = received.split(" ")[2];
@@ -98,6 +115,22 @@ public class Client {
         }
     }
 
+    public static void search(final String pattern, final File folder, List<String> result) {
+        for (final File f : folder.listFiles()) {
+
+            if (f.isDirectory()) {
+                search(pattern, f, result);
+            }
+
+            if (f.isFile()) {
+                if (f.getName().matches(pattern)) {
+                    result.add(f.getAbsolutePath());
+                }
+            }
+
+        }
+    }
+
     public static String getmac() {
         InetAddress ip;
         String macadd = "";
@@ -134,38 +167,56 @@ public class Client {
 }
 
 class ClientHandler2 extends Thread {
-    final int port;
+    final int SOCKET_PORT;
+    final String filename;
 
     // Constructor
-    public ClientHandler2(int port) {
-        this.port = port;
+    public ClientHandler2(int port, String filename) {
+        this.SOCKET_PORT = port;
+        this.filename = filename;
     }
 
     @Override
     public void run() {
-        ServerSocket ss = null;
         try {
-            ss = new ServerSocket(this.port);
-        } catch (Exception e) {
-            ;
-        }
-        while (true) {
-            Socket s = null;
+            FileInputStream fis = null;
+            BufferedInputStream bis = null;
+            OutputStream os = null;
+            ServerSocket servsock = null;
+            Socket sock = null;
             try {
-                s = ss.accept();
-                System.out.println("Ip Address  =  " + s.getInetAddress());
-                String temp = s.getInetAddress().toString();
-                String ip = temp.substring(1);
-                DataInputStream dis = new DataInputStream(s.getInputStream());
-                DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-            } catch (Exception e) {
-                try {
-                    s.close();
-                } catch (Exception ee) {
-                    ;
+                servsock = new ServerSocket(SOCKET_PORT);
+                while (true) {
+                    System.out.println("Waiting...");
+                    try {
+                        sock = servsock.accept();
+                        System.out.println("Accepted connection : " + sock);
+                        // send file
+                        File myFile = new File(this.filename);
+                        byte[] mybytearray = new byte[(int) myFile.length()];
+                        fis = new FileInputStream(myFile);
+                        bis = new BufferedInputStream(fis);
+                        bis.read(mybytearray, 0, mybytearray.length);
+                        os = sock.getOutputStream();
+                        System.out.println("Sending " + this.filename + "(" + mybytearray.length + " bytes)");
+                        os.write(mybytearray, 0, mybytearray.length);
+                        os.flush();
+                        System.out.println("Done.");
+                    } finally {
+                        if (bis != null)
+                            bis.close();
+                        if (os != null)
+                            os.close();
+                        if (sock != null)
+                            sock.close();
+                    }
                 }
-                e.printStackTrace();
+            } finally {
+                if (servsock != null)
+                    servsock.close();
             }
+        } catch (Exception e) {
+
         }
 
     }

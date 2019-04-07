@@ -1,12 +1,14 @@
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.Scanner;
+import java.io.*; 
+import java.net.*; 
+import java.util.*; 
+import java.util.Scanner; 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.UnknownHostException; 
+import java.awt.*;  
+import java.awt.event.*;
 
 /**
  *
@@ -75,22 +77,53 @@ public class Client {
                         dos.writeUTF("ForPeer " + received + " " + Integer.toString(port));
                     else
                         dos.writeUTF("ForPeer " + received + " " + "No");
-                } else if (received.split(" ")[0].equals("Connect")) {
+                } else if(received.split(" ")[0].equals("Connect"))
+                {
+                    String filename = dis.readUTF();
+                    String received2 = dis.readUTF();
+                    ArrayList<String> returnIPs = new ArrayList<>(); 
+                    ArrayList<String> returnPORTs = new ArrayList<>(); 
+                    System.out.println("1 "+received2);
+                    for (int i=0;i<Integer.parseInt(received2);i++)
+                    {
+                        received = dis.readUTF();
+                        System.out.println("2 "+received);
+                        if(!received.equals("No file found"))
+                        {
+                            returnIPs.add(received.split(" ")[2]);
+                            returnPORTs.add(received.split(" ")[3]);
+                        }
 
-                    String peerip = received.split(" ")[2];
-                    int peerport = Integer.parseInt(received.split(" ")[3]);
-                    Socket peerS = new Socket(peerip, peerport);
-                } else {
+                    }
+                    
+                    System.out.println("@@@@@@@@@@@@@@@@@@ ");
+                    //String peerip = received.split(" ")[2];
+                    //int peerport = Integer.parseInt(received.split(" ")[3]);
+                    //System.out.println(peerip);
+                    //System.out.println(peerport);
+                    if(returnIPs.size()>=1)
+                    {
+                        Thread t3 = new ClientHandler3(returnIPs.get(0),Integer.parseInt(returnPORTs.get(0)),filename);
+                        t3.start();
+                        //Socket peerS = new Socket(returnIPs.get(0), Integer.parseInt(returnPORTs.get(0)));
+                        System.out.println("Peer to peer connected");
+                    }
+                    else{
+                        System.out.println("No peer has this file!");
+                    }
+                }
+                else
+                {
                     System.out.println(received);
 
-                    if (flag == 0) {
-                        tt2 = new UserRequest2(scn, dos, dis);
+                    if(flag==0) 
+                    {
+                        tt2 = new UserRequest2(scn,dos,dis);
                         tt2.start();
-                        // System.out.println("out");
-                        flag = 1;
+                        //System.out.println("out");
+                        flag=1;
                         int a = 12;
-                        if (a == 13)
-                            break;
+                        if(a==13) break;
                     }
                 }
                 /*
@@ -222,13 +255,76 @@ class ClientHandler2 extends Thread {
     }
 }
 
+class ClientHandler3 extends Thread {
+    public final int SOCKET_PORT;      // you may change this
+    public final String SERVER ;  // localhost
+    public final String FILE_TO_RECEIVED ;  // you may change this, I give a
+                                                            // different name because i don't want to
+                                                            // overwrite the one used by server...
+
+  public final static int FILE_SIZE = 16022386; // file size temporary hard coded
+                                               // should bigger than the file to be downloaded
+    // Constructor
+    public ClientHandler3( String SERVER, int SOCKET_PORT, String filename) {
+        this.SERVER = SERVER;
+        this.SOCKET_PORT = SOCKET_PORT;
+        this.FILE_TO_RECEIVED = "C:/Users/arind/Desktop/"+filename;
+    }
+
+    @Override
+    public void run() {
+        try {
+
+            int bytesRead;
+            int current = 0;
+            FileOutputStream fos = null;
+            BufferedOutputStream bos = null;
+            Socket sock = null;
+            try {
+            sock = new Socket(SERVER, SOCKET_PORT);
+            System.out.println("Connecting...");
+
+            // receive file
+            byte [] mybytearray  = new byte [FILE_SIZE];
+            InputStream is = sock.getInputStream();
+            fos = new FileOutputStream(FILE_TO_RECEIVED);
+            bos = new BufferedOutputStream(fos);
+            bytesRead = is.read(mybytearray,0,mybytearray.length);
+            current = bytesRead;
+
+            do {
+                bytesRead =
+                    is.read(mybytearray, current, (mybytearray.length-current));
+                if(bytesRead >= 0) current += bytesRead;
+            } while(bytesRead > -1);
+
+            bos.write(mybytearray, 0 , current);
+            bos.flush();
+            System.out.println("File " + FILE_TO_RECEIVED
+                + " downloaded (" + current + " bytes read)");
+            }
+            finally {
+            if (fos != null) fos.close();
+            if (bos != null) bos.close();
+            if (sock != null) sock.close();
+            }
+            
+        } catch (Exception e) {
+            ;
+        }
+        
+
+
+    }
+
+}
+
 class UserRequest2 extends Thread {
     final Scanner scn;
     final DataOutputStream dos;
     final DataInputStream dis;
-
     // Constructor
-    public UserRequest2(Scanner scn, DataOutputStream dos, DataInputStream dis) {
+    public UserRequest2(Scanner scn,DataOutputStream dos,DataInputStream dis) {
         this.scn = scn;
         this.dos = dos;
         this.dis = dis;
@@ -236,15 +332,16 @@ class UserRequest2 extends Thread {
 
     @Override
     public void run() {
-        while (true) {
-            // System.out.println("abcd2");
+        while(true)
+        {
+            //System.out.println("abcd2");
             String hh = scn.nextLine();
             try {
                 dos.writeUTF(hh);
             } catch (Exception e) {
                 ;
             }
-            // System.out.println("ez pz");
+            //System.out.println("ez pz");
         }
     }
 

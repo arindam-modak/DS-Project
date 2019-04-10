@@ -22,7 +22,7 @@ public class Client {
             // InetAddress ip = InetAddress.getByName("localhost");
 
             // establish the connection with server port 5056
-            Socket s = new Socket("172.19.17.160", 5057);
+            Socket s = new Socket("192.168.43.38", 5057);
 
             // obtaining input and out streams
             DataInputStream dis = new DataInputStream(s.getInputStream());
@@ -48,7 +48,7 @@ public class Client {
                     DataInputStream minidis = new DataInputStream(s.getInputStream());
                     DataOutputStream minidos = new DataOutputStream(s.getOutputStream());
                     System.out.println("Hello 1");
-                    final File folder = new File(".");
+                    final File folder = new File("./src/peertopeer/");
 
                     List<String> result = new ArrayList<>();
 
@@ -59,8 +59,11 @@ public class Client {
                         System.out.println(rs);
                         flag3 = 1;
                     }
-                    Thread t = new ClientHandler2(port, result.get(0));
-                    t.start();
+                    if(flag3==1)
+                    {
+                        Thread t = new ClientHandler2(port, result.get(0));
+                        t.start();
+                    }
                     System.out.println("Hello 2");
                     received = dis.readUTF();
 
@@ -90,6 +93,8 @@ public class Client {
                     // System.out.println(peerip);
                     // System.out.println(peerport);
                     if (returnIPs.size() >= 1) {
+                        System.out.println(returnIPs.get(0));
+                        System.out.println(Integer.parseInt(returnPORTs.get(0)));
                         Thread t3 = new ClientHandler3(returnIPs.get(0), Integer.parseInt(returnPORTs.get(0)),
                                 filename);
                         t3.start();
@@ -137,9 +142,9 @@ public class Client {
     public static void search(final String pattern, final File folder, List<String> result) {
         for (final File f : folder.listFiles()) {
 
-            if (f.isDirectory()) {
-                search(pattern, f, result);
-            }
+//            if (f.isDirectory()) {
+//                search(pattern, f, result);
+//            }
 
             if (f.isFile()) {
                 if (f.getName().matches(pattern)) {

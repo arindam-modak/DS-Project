@@ -23,7 +23,7 @@ class ClientHandler3 extends Thread {
     public ClientHandler3(String SERVER, int SOCKET_PORT, String filename) {
         this.SERVER = SERVER;
         this.SOCKET_PORT = SOCKET_PORT;
-        this.FILE_TO_RECEIVED = System.getProperty("user.dir").replace('\\', '/') + '/' + filename;
+        this.FILE_TO_RECEIVED = System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/" + filename;
     }
 
     @Override

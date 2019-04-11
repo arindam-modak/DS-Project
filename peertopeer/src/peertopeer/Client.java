@@ -8,134 +8,202 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.io.IOException;
+import java.lang.ProcessBuilder;
 
 public class Client {
 
     public static void main(String[] args) throws IOException {
-        int port = 5057;
+        int port = 5065;
         int flag = 0;
-        Thread tt2;
-        try {
-            Scanner scn = new Scanner(System.in);
+        Thread tt2 = null;
+        int flag4 = 0;
+        String myIP = null;
+        String ip="172.19.16.230";
+        int port1=5065;
+        while(true)
+        {
+            flag=0;
+            ArrayList<String> onlineClients = new ArrayList<>();
+            try {
+                Scanner scn = new Scanner(System.in);
 
-            // getting localhost ip
-            // InetAddress ip = InetAddress.getByName("localhost");
+                // getting localhost ip
+                // InetAddress ip = InetAddress.getByName("localhost");
 
-            // establish the connection with server port 5056
-            Socket s = new Socket("192.168.43.38", 5057);
-
-            // obtaining input and out streams
-            DataInputStream dis = new DataInputStream(s.getInputStream());
-            DataOutputStream dos = new DataOutputStream(s.getOutputStream());
-
-            // the following loop performs the exchange of
-            // information between client and client handler
-            while (true) {
-
-                String received = dis.readUTF();
-                received = received.trim();
-                // System.out.println(received);
-                if (received.equals("MAC")) {
-                    String macadd = getmac();
-                    dos.writeUTF(macadd);
-                } else if (received.split(" ")[0].equals("OnlineClients")) {
-                    System.out.println(received);
-
-                } else if (received.split(" ")[0].equals("DoYouHaveFile")) {
-                    System.out.println("Starting mini server Requested filename - " + received.split(" ")[1]);
-                    String filename = received.split(" ")[1];
-                    port += 1;
-                    DataInputStream minidis = new DataInputStream(s.getInputStream());
-                    DataOutputStream minidos = new DataOutputStream(s.getOutputStream());
-                    System.out.println("Hello 1");
-                    final File folder = new File("./src/peertopeer/");
-
-                    List<String> result = new ArrayList<>();
-
-                    search(filename, folder, result);
-
-                    int flag3 = 0;
-                    for (String rs : result) {
-                        System.out.println(rs);
-                        flag3 = 1;
-                    }
-                    if(flag3==1)
+                // establish the connection with server port 5056
+                
+                Socket s = new Socket(ip, port1);
+                System.out.println(ip);
+                // obtaining input and out streams
+                DataInputStream dis = new DataInputStream(s.getInputStream());
+                DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+                // the following loop performs the exchange of
+                // information between client and client handler
+                while (true) {
+                    String received = dis.readUTF();
+                    received = received.trim();
+                    // System.out.println(received);
+                    if (received.split(" ")[0].equals("IP"))
                     {
-                        Thread t = new ClientHandler2(port, result.get(0));
-                        t.start();
+                        myIP = received.split(" ")[1];
+                        for(int i=2;i<received.split(" ").length;i++)
+                        {
+                            onlineClients.add(received.split(" ")[i]);
+                        }
                     }
-                    System.out.println("Hello 2");
-                    received = dis.readUTF();
+                    
+                    else if (received.equals("MAC")) {
+                        String macadd = getmac();
+                        dos.writeUTF(macadd);
+                    } else if (received.split(" ")[0].equals("OnlineClients")) {
+                        System.out.println(received);
 
-                    if (flag3 == 1)
-                        dos.writeUTF("ForPeer " + received + " " + Integer.toString(port));
-                    else
-                        dos.writeUTF("ForPeer " + received + " " + "No");
-                } else if (received.split(" ")[0].equals("Connect")) {
-                    String filename = dis.readUTF();
-                    String received2 = dis.readUTF();
-                    ArrayList<String> returnIPs = new ArrayList<>();
-                    ArrayList<String> returnPORTs = new ArrayList<>();
-                    System.out.println("1 " + received2);
-                    for (int i = 0; i < Integer.parseInt(received2); i++) {
+                    } else if (received.split(" ")[0].equals("DoYouHaveFile")) {
+                        System.out.println("Starting mini server Requested filename - " + received.split(" ")[1]);
+                        String filename = received.split(" ")[1];
+                        port += 1;
+                        DataInputStream minidis = new DataInputStream(s.getInputStream());
+                        DataOutputStream minidos = new DataOutputStream(s.getOutputStream());
+                        System.out.println("Hello 1");
+                        final File folder = new File("./src/peertopeer/");
+
+                        List<String> result = new ArrayList<>();
+
+                        search(filename, folder, result);
+
+                        int flag3 = 0;
+                        for (String rs : result) {
+                            System.out.println(rs);
+                            flag3 = 1;
+                        }
+                        if(flag3==1)
+                        {
+                            Thread t = new ClientHandler2(port, result.get(0));
+                            t.start();
+                        }
+                        System.out.println("Hello 2");
                         received = dis.readUTF();
-                        System.out.println("2 " + received);
-                        if (!received.equals("No file found")) {
-                            returnIPs.add(received.split(" ")[2]);
-                            returnPORTs.add(received.split(" ")[3]);
+
+                        if (flag3 == 1)
+                            dos.writeUTF("ForPeer " + received + " " + Integer.toString(port));
+                        else
+                            dos.writeUTF("ForPeer " + received + " " + "No");
+                    } else if (received.split(" ")[0].equals("Connect")) {
+                        tt2.suspend();
+
+                        String filename = dis.readUTF();
+                        String received2 = dis.readUTF();
+                        ArrayList<String> returnIPs = new ArrayList<>();
+                        ArrayList<String> returnPORTs = new ArrayList<>();
+                        System.out.println("1 " + received2);
+                        for (int i = 0; i < Integer.parseInt(received2); i++) {
+                            received = dis.readUTF();
+                            System.out.println("2 " + received);
+                            if (!received.equals("No file found")) {
+                                returnIPs.add(received.split(" ")[2]);
+                                returnPORTs.add(received.split(" ")[3]);
+                            }
+
                         }
 
-                    }
+                        System.out.println("@@@@@@@@@@@@@@@@@@ ");
+                        // String peerip = received.split(" ")[2];
+                        // int peerport = Integer.parseInt(received.split(" ")[3]);
+                        // System.out.println(peerip);
+                        // System.out.println(peerport);
+                        if (returnIPs.size() >= 1) {
+                            System.out.println(returnIPs.get(0));
+                            System.out.println(Integer.parseInt(returnPORTs.get(0)));
+                            Thread t3 = new ClientHandler3(returnIPs.get(0), Integer.parseInt(returnPORTs.get(0)),
+                                    filename);
+                            t3.start();
+                            // Socket peerS = new Socket(returnIPs.get(0),
+                            // Integer.parseInt(returnPORTs.get(0)));
+                            System.out.println("Peer to peer connected");
+                        } else {
+                            System.out.println("No peer has this file!");
+                        }
 
-                    System.out.println("@@@@@@@@@@@@@@@@@@ ");
-                    // String peerip = received.split(" ")[2];
-                    // int peerport = Integer.parseInt(received.split(" ")[3]);
-                    // System.out.println(peerip);
-                    // System.out.println(peerport);
-                    if (returnIPs.size() >= 1) {
-                        System.out.println(returnIPs.get(0));
-                        System.out.println(Integer.parseInt(returnPORTs.get(0)));
-                        Thread t3 = new ClientHandler3(returnIPs.get(0), Integer.parseInt(returnPORTs.get(0)),
-                                filename);
-                        t3.start();
-                        // Socket peerS = new Socket(returnIPs.get(0),
-                        // Integer.parseInt(returnPORTs.get(0)));
-                        System.out.println("Peer to peer connected");
+                        tt2.resume();
                     } else {
-                        System.out.println("No peer has this file!");
-                    }
-                } else {
-                    System.out.println(received);
+                        System.out.println(received);
 
-                    if (flag == 0) {
-                        tt2 = new UserRequest(scn, dos, dis);
-                        tt2.start();
-                        // System.out.println("out");
-                        flag = 1;
-                        int a = 12;
-                        if (a == 13)
-                            break;
+                        if (flag == 0) {
+                            tt2 = new UserRequest(scn, dos, dis);
+                            tt2.start();
+                            // System.out.println("out");
+                            flag = 1;
+                            int a = 12;
+                            if (a == 13)
+                                break;
+                        }
+                    }
+                    /*
+                     * String tosend = scn.nextLine(); dos.writeUTF(tosend);
+                     * 
+                     * // If client sends exit,close this connection // and then break from the
+                     * while loop if(tosend.equals("Exit")) {
+                     * System.out.println("Closing this connection : " + s); s.close();
+                     * System.out.println("Connection closed"); break; }
+                     * 
+                     * // printing date or time as requested by client String received =
+                     * dis.readUTF(); System.out.println(received);
+                     */
+                }
+
+                // closing resources
+                scn.close();
+                dis.close();
+                dos.close();
+                //System.out.println("%%%%%%%%%");
+                
+                
+            
+            } catch (Exception e) {
+                System.out.println("#############");
+                tt2.stop();
+                //e.printStackTrace();
+                String ip2 = ip;
+                for (int i=0;i<onlineClients.size();i++)
+                {
+                    if(!ip2.equals(onlineClients.get(i).trim()))
+                    {
+                        ip = onlineClients.get(i);
+                        break;
                     }
                 }
-                /*
-                 * String tosend = scn.nextLine(); dos.writeUTF(tosend);
-                 * 
-                 * // If client sends exit,close this connection // and then break from the
-                 * while loop if(tosend.equals("Exit")) {
-                 * System.out.println("Closing this connection : " + s); s.close();
-                 * System.out.println("Connection closed"); break; }
-                 * 
-                 * // printing date or time as requested by client String received =
-                 * dis.readUTF(); System.out.println(received);
-                 */
-            }
+                
+                if(ip.equals(myIP))
+                {
+                    //port1++;
+                    //port++;
+                    String homeDirectory = System.getProperty("user.dir")+"\\src\\peertopeer";
+                    System.out.println(homeDirectory);
+                    //Process process;
+                    //process = Runtime.getRuntime().exec(String.format("javac Server.java", homeDirectory));
+                    //process = Runtime.getRuntime().exec(String.format("java Server", homeDirectory));
 
-            // closing resources
-            scn.close();
-            dis.close();
-            dos.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+                    ProcessBuilder builder = new ProcessBuilder();
+                    builder.command("javac", "Server2.java");
+                    builder.directory(new File(homeDirectory));
+                    Process process = builder.start();
+                    try{Thread.sleep(4000);}catch(InterruptedException ee){System.out.println(ee);}
+                    builder = new ProcessBuilder();
+                    builder.command("java", "Server2");
+                    builder.directory(new File(homeDirectory));
+                    process = builder.start();
+                    try{Thread.sleep(4000);}catch(InterruptedException ee){System.out.println(ee);}
+                    //new ProcessBuilder("C:\\Users\\arind\\Desktop\\DS-Project\\peertopeer\\src\\peertopeer\\javac Server.java").start();
+                    //new ProcessBuilder("C:\\Users\\arind\\Desktop\\DS-Project\\peertopeer\\src\\peertopeer\\java Server").start();
+                    //Process p = Runtime.getRuntime().exec("C:\\Users\\arind\\Desktop\\DS-Project\\peertopeer\\src\\peertopeer\\javac Server.java");
+                    //Process p2 = Runtime.getRuntime().exec("C:\\Users\\arind\\Desktop\\DS-Project\\peertopeer\\src\\peertopeer\\java Server");
+                }
+                else
+                {
+                    try{Thread.sleep(10000);}catch(InterruptedException ee){System.out.println(ee);}
+                }
+            }
         }
     }
 

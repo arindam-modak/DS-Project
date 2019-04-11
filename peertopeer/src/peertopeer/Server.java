@@ -11,15 +11,11 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-/**
- *
- * @author Yash
- */
 
 public class Server {
     public static void main(String[] args) throws IOException {
         // server is listening on port 5057 jhjvjhvj
-        ServerSocket ss = new ServerSocket(5057);
+        ServerSocket ss = new ServerSocket(5065);
         ArrayList<String> onlineClients = new ArrayList<>();
         HashMap<String, DataOutputStream> outputstream = new HashMap<>();
         HashMap<String, DataInputStream> inputstream = new HashMap<>();
@@ -57,7 +53,15 @@ public class Server {
 
                 // create a new thread object
                 Thread t = new ServerClientHandler(s, dis, dos, ip, onlineClients, inputstream, outputstream, locking);
-
+                String allpeers = ip;
+                for (i = 0; i < onlineClients.size(); i++) {
+                    allpeers += " "+onlineClients.get(i);
+                }
+                for (i = 0; i < onlineClients.size(); i++) {
+                    //System.out.println(onlineClients.get(i));
+                    //System.out.println(allpeers);
+                    outputstream.get(onlineClients.get(i)).writeUTF("IP "+allpeers);
+                }
                 // Invoking the start() method
                 t.start();
 

@@ -71,7 +71,7 @@ public class Client {
         Thread tt2 = null;
         int flag4 = 0;
         String myIP = null;
-        String ip="192.168.43.38";
+        String ip="172.20.33.206";
         int port1=5056;
         
         while(true)
@@ -251,15 +251,16 @@ public class Client {
                                         filename+"2", replication, returnIPsNoFile,dos,chunking);
                                 t3.start();
                                 t4.start();
-
+                                System.out.println("Peer to peer connected");
+                                
                                 t3.join();
                                 t4.join();
 
-                                FileMerger fm = new FileMerger(filename+"1",filename+"2"+filename);
+                                FileMerger fm = new FileMerger(System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"1",System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"2",System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename);
                                 fm.merge();
                                 // Socket peerS = new Socket(returnIPs.get(0),
                                 // Integer.parseInt(returnPORTs.get(0)));
-                                System.out.println("Peer to peer connected");
+                                System.out.println("Files Merged Successfully");
                             }
                             else{
                                 System.out.println(returnIPs.get(0));
@@ -273,24 +274,18 @@ public class Client {
                                         filename+"2", replication, returnIPsNoFile,dos,chunking);
                                 t3.start();
                                 t4.start();
+                                System.out.println("Peer to peer connected");
 
                                 t3.join();
                                 t4.join();
 
-                                FileMerger fm = new FileMerger(filename+"1",filename+"2"+filename);
+                                FileMerger fm = new FileMerger(System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"1",System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"2",System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename);
                                 fm.merge();
                                 // Socket peerS = new Socket(returnIPs.get(0),
                                 // Integer.parseInt(returnPORTs.get(0)));
-                                System.out.println("Peer to peer connected");
+                                System.out.println("Files Merged Successfully");
                             }
-                            System.out.println(returnIPs.get(0));
-                            System.out.println(Integer.parseInt(returnPORTs.get(0)));
-                            Thread t3 = new ClientHandler3(returnIPs.get(0), Integer.parseInt(returnPORTs.get(0)),
-                                    filename, replication, returnIPsNoFile,dos);
-                            t3.start();
-                            // Socket peerS = new Socket(returnIPs.get(0),
-                            // Integer.parseInt(returnPORTs.get(0)));
-                            System.out.println("Peer to peer connected");
+                            
                         } else {
                             System.out.println("No peer has this file!");
                         }

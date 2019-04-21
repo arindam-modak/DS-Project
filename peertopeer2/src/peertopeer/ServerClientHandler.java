@@ -31,11 +31,12 @@ class ServerClientHandler extends Thread {
     HashMap<String, Integer> locking;
     HashMap<String, Integer> FileCount;
     HashMap<String, Integer> peerLocking;
+    int chunking;
     // Constructor
     public ServerClientHandler(Socket s, DataInputStream dis, DataOutputStream dos, String ip_address,
             ArrayList<String> onlineClients, HashMap<String, DataInputStream> inputstream,
             HashMap<String, DataOutputStream> outputstream, HashMap<String, Integer> locking,
-            HashMap<String, Integer> FileCount, HashMap<String, Integer> peerLocking) {
+            HashMap<String, Integer> FileCount, HashMap<String, Integer> peerLocking, int chunking) {
         this.s = s;
         this.dis = dis;
         this.dos = dos;
@@ -46,6 +47,7 @@ class ServerClientHandler extends Thread {
         this.locking = locking;
         this.FileCount = FileCount;
         this.peerLocking = peerLocking;
+        this.chunking = chunking;
     }
 
     @Override
@@ -147,11 +149,11 @@ class ServerClientHandler extends Thread {
                     {
                         String repIp = this.dis.readUTF();
                         String repFile = this.dis.readUTF();
-                        this.outputstream.get(repIp).writeUTF("Connect");
+                        this.outputstream.get(repIp).writeUTF("Connect 0");
                         this.outputstream.get(repIp).writeUTF(repFile);
                         this.outputstream.get(repIp).writeUTF("Replicate No");
                         this.outputstream.get(repIp).writeUTF(Integer.toString(1));
-                        this.dos.writeUTF("DoYouHaveFile " + repFile);
+                        this.dos.writeUTF("DoYouHaveFile " + repFile + " 0");
                         this.dos.writeUTF(repIp);
                     }
                     else if(received.equals("1")){
@@ -182,7 +184,7 @@ class ServerClientHandler extends Thread {
                         dos.writeUTF("Enter the Name of the file you want ");
                         String filename = dis.readUTF();
                         System.out.println(filename);
-                        dos.writeUTF("Connect");
+                        dos.writeUTF("Connect "+Integer.toString(this.chunking));
                         dos.writeUTF(filename);
                         
                         if(this.FileCount.containsKey(filename))
@@ -204,7 +206,7 @@ class ServerClientHandler extends Thread {
                             tt += " " + this.onlineClients.get(i);
 
                             if (this.onlineClients.get(i) != this.ip_address) {
-                                this.outputstream.get(this.onlineClients.get(i)).writeUTF("DoYouHaveFile " + filename);
+                                this.outputstream.get(this.onlineClients.get(i)).writeUTF("DoYouHaveFile " + filename + " " + Integer.toString(this.chunking));
                                 this.outputstream.get(this.onlineClients.get(i)).writeUTF(this.ip_address);
                                 //selectclient = this.onlineClients.get(i);
                             }

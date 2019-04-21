@@ -157,7 +157,7 @@ public class Client {
                     else if (received.split(" ")[0].equals("DoYouHaveFile")) {
                         System.out.println("Starting mini server Requested filename - " + received.split(" ")[1]);
                         String filename = received.split(" ")[1];
-                        port += 1;
+                        int chunking = Integer.parseInt(received.split(" ")[2]);
                         DataInputStream minidis = new DataInputStream(s.getInputStream());
                         DataOutputStream minidos = new DataOutputStream(s.getOutputStream());
                         System.out.println("Hello 1");
@@ -173,19 +173,37 @@ public class Client {
                         
                         if(flag3==1)
                         {
-                            Thread t = new ClientHandler2(port,filename);
-                            t.start();
+                            if(chunking==0)
+                            {
+                                port++;
+                                Thread t1 = new ClientHandler2(port,filename,0);
+                                t1.start();
+                            }
+                            else{
+                                port++;
+                                Thread t1 = new ClientHandler2(port,filename,1);
+                                t1.start();
+                                port++;
+                                Thread t2 = new ClientHandler2(port,filename,2);
+                                t2.start();
+                            }
                         }
                         System.out.println("Hello 2");
                         received = dis.readUTF();
 
                         if (flag3 == 1)
-                            dos.writeUTF("ForPeer " + received + " " + Integer.toString(port));
+                        {
+                            if(chunking==0)
+                                dos.writeUTF("ForPeer " + received + " " + Integer.toString(port));
+                            else
+                                dos.writeUTF("ForPeer " + received + " " + Integer.toString(port-1));
+                        }
+                            
                         else
                             dos.writeUTF("ForPeer " + received + " " + "No");
                     } else if (received.split(" ")[0].equals("Connect")) {
                         tt2.suspend();
-
+                        int chunking = Integer.parseInt(received.split(" ")[1]);
                         String filename = dis.readUTF();
                         String replication = dis.readUTF();
                         String received2 = dis.readUTF();
@@ -212,7 +230,59 @@ public class Client {
                         // int peerport = Integer.parseInt(received.split(" ")[3]);
                         // System.out.println(peerip);
                         // System.out.println(peerport);
-                        if (returnIPs.size() >= 1) {
+                        if ((returnIPs.size() >= 1 && chunking == 0)) {
+                            System.out.println(returnIPs.get(0));
+                            System.out.println(Integer.parseInt(returnPORTs.get(0)));
+                            Thread t3 = new ClientHandler3(returnIPs.get(0), Integer.parseInt(returnPORTs.get(0)),
+                                    filename, replication, returnIPsNoFile,dos,chunking);
+                            t3.start();
+                            // Socket peerS = new Socket(returnIPs.get(0),
+                            // Integer.parseInt(returnPORTs.get(0)));
+                            System.out.println("Peer to peer connected");
+                        } else if((returnIPs.size() >= 1 && chunking == 1)) {
+                            if(returnIPs.size() == 1)
+                            {
+                                System.out.println(returnIPs.get(0));
+                                System.out.println(Integer.parseInt(returnPORTs.get(0)));
+                                Thread t3 = new ClientHandler3(returnIPs.get(0), Integer.parseInt(returnPORTs.get(0)),
+                                        filename+"1", "Replicate No", returnIPsNoFile,dos,chunking);
+
+                                Thread t4 = new ClientHandler3(returnIPs.get(0), Integer.parseInt(returnPORTs.get(0))+1,
+                                        filename+"2", replication, returnIPsNoFile,dos,chunking);
+                                t3.start();
+                                t4.start();
+
+                                t3.join();
+                                t4.join();
+
+                                FileMerger fm = new FileMerger(filename+"1",filename+"2"+filename);
+                                fm.merge();
+                                // Socket peerS = new Socket(returnIPs.get(0),
+                                // Integer.parseInt(returnPORTs.get(0)));
+                                System.out.println("Peer to peer connected");
+                            }
+                            else{
+                                System.out.println(returnIPs.get(0));
+                                System.out.println(Integer.parseInt(returnPORTs.get(0)));
+                                System.out.println(returnIPs.get(1));
+                                System.out.println(Integer.parseInt(returnPORTs.get(1)));
+                                Thread t3 = new ClientHandler3(returnIPs.get(0), Integer.parseInt(returnPORTs.get(0)),
+                                        filename+"1", "Replicate No", returnIPsNoFile,dos,chunking);
+
+                                Thread t4 = new ClientHandler3(returnIPs.get(1), Integer.parseInt(returnPORTs.get(1))+1,
+                                        filename+"2", replication, returnIPsNoFile,dos,chunking);
+                                t3.start();
+                                t4.start();
+
+                                t3.join();
+                                t4.join();
+
+                                FileMerger fm = new FileMerger(filename+"1",filename+"2"+filename);
+                                fm.merge();
+                                // Socket peerS = new Socket(returnIPs.get(0),
+                                // Integer.parseInt(returnPORTs.get(0)));
+                                System.out.println("Peer to peer connected");
+                            }
                             System.out.println(returnIPs.get(0));
                             System.out.println(Integer.parseInt(returnPORTs.get(0)));
                             Thread t3 = new ClientHandler3(returnIPs.get(0), Integer.parseInt(returnPORTs.get(0)),

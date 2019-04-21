@@ -1,4 +1,6 @@
 
+import java.awt.event.MouseListener;
+import java.io.*;
 import java.io.*;
 import java.text.*;
 import java.util.*;
@@ -8,10 +10,6 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-/**
- *
- * @author Yash
- */
 
 public class Server2 {
     public static void main(String[] args) throws IOException {
@@ -23,6 +21,7 @@ public class Server2 {
         HashMap<String, Integer> locking = new HashMap<>();
         HashMap<String, Integer> peerLocking = new HashMap<>();
         HashMap<String, Integer> FileCount = new HashMap<>();
+        int chunking = 0;
         // running infinite loop for getting client requests
         while (true) {
             Socket s = null;
@@ -56,7 +55,7 @@ public class Server2 {
                 System.out.println("Assigning new thread for this client");
 
                 // create a new thread object
-                Thread t = new ServerClientHandler2(s, dis, dos, ip, onlineClients, inputstream, outputstream, locking, FileCount, peerLocking);
+                Thread t = new ServerClientHandler2(s, dis, dos, ip, onlineClients, inputstream, outputstream, locking, FileCount, peerLocking, chunking);
                 String allpeers = ip;
                 for (i = 0; i < onlineClients.size(); i++) {
                     allpeers += " "+onlineClients.get(i);
@@ -76,6 +75,7 @@ public class Server2 {
         }
     }
 }
+
 
 
 
@@ -99,11 +99,12 @@ class ServerClientHandler2 extends Thread {
     HashMap<String, Integer> locking;
     HashMap<String, Integer> FileCount;
     HashMap<String, Integer> peerLocking;
+    int chunking;
     // Constructor
     public ServerClientHandler2(Socket s, DataInputStream dis, DataOutputStream dos, String ip_address,
             ArrayList<String> onlineClients, HashMap<String, DataInputStream> inputstream,
             HashMap<String, DataOutputStream> outputstream, HashMap<String, Integer> locking,
-            HashMap<String, Integer> FileCount, HashMap<String, Integer> peerLocking) {
+            HashMap<String, Integer> FileCount, HashMap<String, Integer> peerLocking, int chunking) {
         this.s = s;
         this.dis = dis;
         this.dos = dos;
@@ -114,6 +115,7 @@ class ServerClientHandler2 extends Thread {
         this.locking = locking;
         this.FileCount = FileCount;
         this.peerLocking = peerLocking;
+        this.chunking = chunking;
     }
 
     @Override
@@ -215,11 +217,11 @@ class ServerClientHandler2 extends Thread {
                     {
                         String repIp = this.dis.readUTF();
                         String repFile = this.dis.readUTF();
-                        this.outputstream.get(repIp).writeUTF("Connect");
+                        this.outputstream.get(repIp).writeUTF("Connect 0");
                         this.outputstream.get(repIp).writeUTF(repFile);
                         this.outputstream.get(repIp).writeUTF("Replicate No");
                         this.outputstream.get(repIp).writeUTF(Integer.toString(1));
-                        this.dos.writeUTF("DoYouHaveFile " + repFile);
+                        this.dos.writeUTF("DoYouHaveFile " + repFile + " 0");
                         this.dos.writeUTF(repIp);
                     }
                     else if(received.equals("1")){
@@ -250,7 +252,7 @@ class ServerClientHandler2 extends Thread {
                         dos.writeUTF("Enter the Name of the file you want ");
                         String filename = dis.readUTF();
                         System.out.println(filename);
-                        dos.writeUTF("Connect");
+                        dos.writeUTF("Connect "+Integer.toString(this.chunking));
                         dos.writeUTF(filename);
                         
                         if(this.FileCount.containsKey(filename))
@@ -272,7 +274,7 @@ class ServerClientHandler2 extends Thread {
                             tt += " " + this.onlineClients.get(i);
 
                             if (this.onlineClients.get(i) != this.ip_address) {
-                                this.outputstream.get(this.onlineClients.get(i)).writeUTF("DoYouHaveFile " + filename);
+                                this.outputstream.get(this.onlineClients.get(i)).writeUTF("DoYouHaveFile " + filename + " " + Integer.toString(this.chunking));
                                 this.outputstream.get(this.onlineClients.get(i)).writeUTF(this.ip_address);
                                 //selectclient = this.onlineClients.get(i);
                             }

@@ -22,6 +22,7 @@ public class Server {
         HashMap<String, Integer> locking = new HashMap<>();
         HashMap<String, Integer> peerLocking = new HashMap<>();
         HashMap<String, Integer> FileCount = new HashMap<>();
+        int chunking = 0;
         // running infinite loop for getting client requests
         while (true) {
             Socket s = null;
@@ -55,7 +56,7 @@ public class Server {
                 System.out.println("Assigning new thread for this client");
 
                 // create a new thread object
-                Thread t = new ServerClientHandler(s, dis, dos, ip, onlineClients, inputstream, outputstream, locking, FileCount, peerLocking);
+                Thread t = new ServerClientHandler(s, dis, dos, ip, onlineClients, inputstream, outputstream, locking, FileCount, peerLocking, chunking);
                 String allpeers = ip;
                 for (i = 0; i < onlineClients.size(); i++) {
                     allpeers += " "+onlineClients.get(i);

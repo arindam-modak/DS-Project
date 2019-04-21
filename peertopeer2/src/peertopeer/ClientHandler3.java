@@ -22,9 +22,10 @@ class ClientHandler3 extends Thread {
     String replication;
     DataOutputStream dos;
     String filename;
+    int chunking;
     // Constructor
 
-    public ClientHandler3(String SERVER, int SOCKET_PORT, String filename,String replication,ArrayList<String> returnIPsNoFile, DataOutputStream dos) {
+    public ClientHandler3(String SERVER, int SOCKET_PORT, String filename,String replication,ArrayList<String> returnIPsNoFile, DataOutputStream dos, int chunking) {
         this.SERVER = SERVER;
         this.SOCKET_PORT = SOCKET_PORT;
         this.filename = filename;
@@ -32,6 +33,7 @@ class ClientHandler3 extends Thread {
         this.returnIPsNoFile = returnIPsNoFile;
         this.replication = replication;
         this.dos = dos;
+        this.chunking = chunking;
     }
 
     @Override
@@ -74,6 +76,9 @@ class ClientHandler3 extends Thread {
                     {
                         this.dos.writeUTF("Replicate File");
                         this.dos.writeUTF(this.returnIPsNoFile.get(0));
+                        if(this.chunking==1)
+                            this.dos.writeUTF(this.filename.substring(0,this.filename.length()-1));    
+                        else
                         this.dos.writeUTF(this.filename);
                     }
                 }

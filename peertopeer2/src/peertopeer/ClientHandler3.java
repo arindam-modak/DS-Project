@@ -74,12 +74,13 @@ class ClientHandler3 extends Thread {
                 {
                     if(this.returnIPsNoFile.size()>0)
                     {
-                        this.dos.writeUTF("Replicate File");
-                        this.dos.writeUTF(this.returnIPsNoFile.get(0));
-                        if(this.chunking==1)
-                            this.dos.writeUTF(this.filename.substring(0,this.filename.length()-1));    
-                        else
-                        this.dos.writeUTF(this.filename);
+                        
+                        if(this.chunking==0)
+                        {
+                            this.dos.writeUTF("Replicate File");
+                            this.dos.writeUTF(this.returnIPsNoFile.get(0));
+                            this.dos.writeUTF(this.filename);    
+                        }
                     }
                 }
                 

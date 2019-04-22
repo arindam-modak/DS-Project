@@ -258,6 +258,23 @@ public class Client {
 
                                 FileMerger fm = new FileMerger(System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"1",System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"2",System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename);
                                 fm.merge();
+
+                                File file1 = new File(System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"1"); 
+                                File file2 = new File(System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"2"); 
+
+                                file1.delete();
+                                file2.delete();
+
+                                if(replication.equals("Replicate Yes"))
+                                {
+                                    if(returnIPsNoFile.size()>0)
+                                    {
+                                        dos.writeUTF("Replicate File");
+                                        dos.writeUTF(returnIPsNoFile.get(0));
+                                        dos.writeUTF(filename);
+                                    }
+                                }
+
                                 // Socket peerS = new Socket(returnIPs.get(0),
                                 // Integer.parseInt(returnPORTs.get(0)));
                                 System.out.println("Files Merged Successfully");
@@ -281,6 +298,22 @@ public class Client {
 
                                 FileMerger fm = new FileMerger(System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"1",System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"2",System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename);
                                 fm.merge();
+
+                                File file1 = new File(System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"1"); 
+                                File file2 = new File(System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"2"); 
+
+                                file1.delete();
+                                file2.delete();
+
+                                if(replication.equals("Replicate Yes"))
+                                {
+                                    if(returnIPsNoFile.size()>0)
+                                    {
+                                        dos.writeUTF("Replicate File");
+                                        dos.writeUTF(returnIPsNoFile.get(0));
+                                        dos.writeUTF(filename);
+                                    }
+                                }
                                 // Socket peerS = new Socket(returnIPs.get(0),
                                 // Integer.parseInt(returnPORTs.get(0)));
                                 System.out.println("Files Merged Successfully");

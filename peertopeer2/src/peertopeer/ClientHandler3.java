@@ -69,7 +69,7 @@ class ClientHandler3 extends Thread {
                 bos.write(mybytearray, 0, current);
                 bos.flush();
                 System.out.println("File " + FILE_TO_RECEIVED + " downloaded (" + current + " bytes read)");
-                
+                Client.insert(filename);
                 if(this.replication.equals("Replicate Yes"))
                 {
                     if(this.returnIPsNoFile.size()>0)

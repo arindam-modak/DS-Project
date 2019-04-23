@@ -258,7 +258,7 @@ public class Client {
 
                                 FileMerger fm = new FileMerger(System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"1",System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"2",System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename);
                                 fm.merge();
-
+                                insert(filename);
                                 File file1 = new File(System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"1"); 
                                 File file2 = new File(System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"2"); 
 
@@ -298,7 +298,7 @@ public class Client {
 
                                 FileMerger fm = new FileMerger(System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"1",System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"2",System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename);
                                 fm.merge();
-
+                                insert(filename);
                                 File file1 = new File(System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"1"); 
                                 File file2 = new File(System.getProperty("user.dir").replace('\\', '/') + "/src/peertopeer/"+filename+"2"); 
 
